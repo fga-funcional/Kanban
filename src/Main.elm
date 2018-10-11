@@ -12,7 +12,7 @@ import Json.Encode as E
 
 main =
     Browser.sandbox
-        { init = example
+        { init = init
         , view = view
         , update = update
         }
@@ -22,7 +22,6 @@ main =
 --------------------------------------------------------------------------------
 -- MODEL
 --------------------------------------------------------------------------------
-
 
 type Status
     = Backlog
@@ -47,7 +46,7 @@ type alias Issue =
 
 init : Model
 init =
-    { issues = [], index = 0, input = "" }
+    { issues = decoded, index = 0, input = "" }
 
 
 {-| Create simple flag element
@@ -201,6 +200,41 @@ arrow arr except msg status =
     in
     span cmds [ text arr ]
 
+decoded =
+    D.decodeString issuesListDecoder json_example |> Result.withDefault []
+
+
+issuesListDecoder : D.Decoder (List Issue)
+issuesListDecoder = D.list issueDecoder
+
+issueDecoder : D.Decoder Issue
+issueDecoder =
+    D.map2 Issue
+        (D.field "description" D.string)
+        (D.field "status" statusDecoder)
+
+statusDecoder : D.Decoder Status
+statusDecoder =
+    D.string |> D.andThen (\x ->
+        case x of
+            "backlog" ->
+                D.succeed Backlog
+
+            "doing" ->
+                D.succeed Doing
+
+            "done" ->
+                D.succeed Done
+
+            "archived" ->
+                D.succeed Archived
+
+            "todo" ->
+                D.succeed Todo
+
+            y ->
+                D.fail <| "Status desconhecido '" ++ y ++ "'"
+    )
 
 
 --------------------------------------------------------------------------------
@@ -217,3 +251,22 @@ example =
             , issue "Learn Haskell"
             ]
     }
+
+json_example =
+    """
+[
+    {
+        "description": "Dividir em 5 boards",
+        "status": "done"
+    }, {
+        "status": "doing",
+        "description": "Importar de JSON"
+    }, {
+        "status": "todo",
+        "description": "Exportar para JSON"
+    }, {
+        "status": "backlog",
+        "description": "esconder por padrão os boards Backlog e Archived"
+    }
+]
+"""
