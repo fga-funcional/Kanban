@@ -160,29 +160,36 @@ view m =
     in
     div []
         [ h1 [] [ text "Kanban board" ]
-        , viewBoard "Backlog" (board Backlog)
+        , div [style "display" "flex"
+        , style "justify-content" "space-around"
+        , style "text-align" "center"
+        ]
+        [ viewBoard "Backlog" (board Backlog)
         , viewBoard "To-do" (board Todo)
         , viewBoard "Doing" (board Doing)
         , viewBoard "Done" (board Done)
         , viewBoard "Archived" (board Archived)
-        , Html.form [ onSubmit Add ]
+        ]
+        , Html.form [ onSubmit Add, style "margin-top" "5rem" ]
             [ input [ placeholder "New issue", value m.input, onInput Input ] []
             , input [ type_ "submit" ] []
             ]
         ]
 
-
 viewBoard : String -> Html Msg -> Html Msg
 viewBoard title issues =
-    div []
-        [ h2 [] [ text title ]
+    div [style "border-radius" "2px"
+        , style "border-style" "solid"
+        , style "min-width" "15rem"
+        , style "min-height" "25rem"]
+        [ h2 [style "margin" "1rem"] [ text title ]
         , issues
         ]
 
 
 viewIssue : Int -> Issue -> Html Msg
 viewIssue i obj =
-    div []
+    div [style "margin" "0.5rem"]
         [ arrow "<= " Backlog (Decr i) obj.status
         , text obj.description
         , arrow " =>" Archived (Incr i) obj.status

@@ -42,7 +42,7 @@ htmlList root item lst =
 
 viewList : Tag msg -> Tag msg -> List (Html msg) -> Html msg
 viewList root item lst =
-    root [] (List.map (\x -> item [] [ x ]) lst)
+    root [style "padding" "0"] (List.map (\x -> item [style "list-style" "none"] [ x ]) lst)
 
 
 {-| Maps view function into list of elements and instead of returning a list
