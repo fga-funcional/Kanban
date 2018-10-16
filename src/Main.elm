@@ -144,7 +144,6 @@ update msg m =
 -- VIEW FUNCTIONS
 --------------------------------------------------------------------------------
 
-
 view : Model -> Html Msg
 view m =
     let
@@ -158,15 +157,18 @@ view m =
                     List.filter (Tuple.first >> (==) s) issueViews
     in
     div []
-        [ h1 [] [ text "Kanban board" ]
+        [ Html.node "link" [ Html.Attributes.rel "stylesheet", Html.Attributes.href "main.css" ] []
+        , h1 [] [ text "Kanban board" ]
         , div [style "display" "flex"
         , style "justify-content" "space-around"
         , style "text-align" "center"
         ]
         [ viewBoard "Backlog" (board Backlog)
+        , button [style "align-self" "flex-start"] [text "Backlog"]
         , viewBoard "To-do" (board Todo)
         , viewBoard "Doing" (board Doing)
         , viewBoard "Done" (board Done)
+        , button [style "align-self" "flex-start"] [text "Archived"]
         , viewBoard "Archived" (board Archived)
         ]
         , Html.form [ onSubmit Add, style "margin-top" "5rem" ]
@@ -180,7 +182,12 @@ viewBoard title issues =
     div [style "border-radius" "2px"
         , style "border-style" "solid"
         , style "min-width" "15rem"
-        , style "min-height" "25rem"]
+        , style "min-height" "25rem"
+        , classList[
+            ("hidden", title == "Backlog"),
+            ("hidden", title == "Archived")
+          ]
+        ]
         [ h2 [style "margin" "1rem"] [ text title ]
         , issues
         ]
