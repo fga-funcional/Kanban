@@ -8,13 +8,17 @@ import Html.Events exposing (..)
 import Utils exposing (..)
 import Json.Decode as D
 import Json.Encode as E
+import Animation exposing (px)
 
 
+
+main : Program () Model Msg
 main =
-    Browser.sandbox
-        { init = init
+    Browser.element
+        { init = always init
         , view = view
         , update = update
+        , subscriptions = subscriptions
         }
 
 
@@ -35,6 +39,7 @@ type alias Model =
     { issues : List Issue
     , index : Int
     , input : String
+    , style : Animation.State
     }
 
 
@@ -44,9 +49,21 @@ type alias Issue =
     }
 
 
-init : Model
+init : ( Model, Cmd Msg )
 init =
-    { issues = decoded, index = 0, input = "" }
+    ( { issues = decoded
+      , index = 0
+      , input = ""
+      , style = Animation.style[Animation.opacity 0.0]
+      }
+    , Cmd.none
+    )
+
+subscriptions : Model -> Sub Msg
+subscriptions m =
+    Sub.batch
+    [Animation.subscription Animate [m.style]
+    ]
 
 
 {-| Create simple flag element
@@ -104,39 +121,79 @@ type Msg
     | Decr Int
     | Add
     | Input String
+    | Animate Animation.Msg
+    | FadeIn
+    | FadeOut
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg m =
     case msg of
         Incr i ->
-            { m
+           ( { m
                 | issues =
                     mapAt i
                         (\x -> { x | status = incr x.status })
                         m.issues
             }
+            , Cmd.none
+           )
 
         Decr i ->
-            { m
+            ( { m
                 | issues =
                     mapAt i
                         (\x -> { x | status = decr x.status })
                         m.issues
             }
+            , Cmd.none
+           )
 
         Add ->
-            { m
+            ( { m
                 | index = m.index + 1
                 , issues = issue m.input :: m.issues
                 , input = ""
             }
+            , Cmd.none
+           )
 
         Input st ->
-            { m | input = st }
+            ( { m | input = st } , Cmd.none)
+
+        FadeIn ->
+            ( { m 
+                | style = 
+                    Animation.interrupt
+                        [ Animation.to
+                            [Animation.opacity 1
+                            ]
+                        ]
+                    m.style
+                }
+                , Cmd.none
+            )
+        FadeOut ->
+            ( { m 
+                | style = 
+                    Animation.interrupt
+                        [ Animation.to
+                            [Animation.opacity 0
+                            ]
+                        ]
+                    m.style
+                }
+                , Cmd.none
+            )
+        Animate animMsg ->
+            ( { m
+                | style = Animation.update animMsg m.style
+              }
+            , Cmd.none
+            )
 
         _ ->
-            m
+            ( m, Cmd.none)
 
 
 
@@ -163,13 +220,13 @@ view m =
         , style "justify-content" "space-around"
         , style "text-align" "center"
         ]
-        [ viewBoard "Backlog" (board Backlog)
-        , button [style "align-self" "flex-start"] [text "Backlog"]
+        [ div ( Animation.render m.style ++ [] ) [ viewBoard "Backlog" (board Backlog)]
+        , button [onClick FadeIn, style "align-self" "flex-start"] [text "Backlog"]
         , viewBoard "To-do" (board Todo)
         , viewBoard "Doing" (board Doing)
         , viewBoard "Done" (board Done)
-        , button [style "align-self" "flex-start"] [text "Archived"]
-        , viewBoard "Archived" (board Archived)
+        , button [onClick FadeIn, style "align-self" "flex-start"] [text "Archived"]
+        , div ( Animation.render m.style ++ [] ) [ viewBoard "Archived" (board Archived)]
         ]
         , Html.form [ onSubmit Add, style "margin-top" "5rem" ]
             [ input [ placeholder "New issue", value m.input, onInput Input ] []
@@ -183,12 +240,9 @@ viewBoard title issues =
         , style "border-style" "solid"
         , style "min-width" "15rem"
         , style "min-height" "25rem"
-        , classList[
-            ("hidden", title == "Backlog"),
-            ("hidden", title == "Archived")
-          ]
         ]
         [ h2 [style "margin" "1rem"] [ text title ]
+        , p [onClick FadeOut, classList [("hidden", title == "To-do"), ("hidden", title == "Doing"), ("hidden", title == "Done")]] [text "X"]
         , issues
         ]
 
@@ -256,15 +310,6 @@ statusDecoder =
 --------------------------------------------------------------------------------
 
 
-example : Model
-example =
-    { init
-        | issues =
-            [ issue "Start board"
-            , issue "Create CSS"
-            , issue "Learn Haskell"
-            ]
-    }
 
 json_example =
     """
