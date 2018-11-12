@@ -211,17 +211,29 @@ view m =
                     List.filter (Tuple.first >> (==) s) issueViews
     in
     div []
-        [ Html.node "link" [ Html.Attributes.rel "stylesheet", Html.Attributes.href "main.css" ] []
+        [ Html.node "link"
+            [ Html.Attributes.rel "stylesheet"
+            , Html.Attributes.href "main.css"
+            ] []
         , h1 [] [ text "Kanban board" ]
-        , div [ class "container"
-        ]
-        [ div ( Animation.render m.style ++ [] ) [ viewBoard "Backlog" (board Backlog)]
-        , button [onClick FadeIn, style "align-self" "flex-start"] [text "Backlog"]
-        , viewBoard "To-do" (board Todo)
-        , viewBoard "Doing" (board Doing)
-        , viewBoard "Done" (board Done)
-        , button [onClick FadeIn, style "align-self" "flex-start"] [text "Archived"]
-        , div ( Animation.render m.style ++ [] ) [ viewBoard "Archived" (board Archived)]
+        , div
+            [ class "container"
+            ]
+            [ div ( Animation.render m.style ++ [] ) [ viewBoard "Backlog" (board Backlog)]
+            , button
+                [ onClick FadeIn
+                , class "fadein"
+                ]
+                [ text "Backlog" ]
+            , viewBoard "To-do" (board Todo)
+            , viewBoard "Doing" (board Doing)
+            , viewBoard "Done"  (board Done)
+            , button
+                [ onClick FadeIn
+                , class "fadein"
+                ]
+                [ text "Archived" ]
+            , div ( Animation.render m.style ++ [] ) [ viewBoard "Archived" (board Archived)]
         ]
         , Html.form [ onSubmit Add, style "margin-top" "5rem" ]
             [ input [ placeholder "New issue", value m.input, onInput Input ] []
@@ -233,8 +245,14 @@ viewBoard : String -> Html Msg -> Html Msg
 viewBoard title issues =
     div [class "board"
         ]
-        [ h2 [style "margin" "1rem"] [ text title ]
-        , p [onClick FadeOut, classList [("hidden", title == "To-do"), ("hidden", title == "Doing"), ("hidden", title == "Done")]] [text "X"]
+        [ h2 [ style "margin" "1rem"] [ text title ]
+        , p [ onClick FadeOut
+            , classList
+                [ ("hidden", title == "To-do")
+                , ("hidden", title == "Doing")
+                , ("hidden", title == "Done")
+                ]
+            ] [text "X"]
         , issues
         ]
 
