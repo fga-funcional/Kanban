@@ -11,7 +11,6 @@ import Json.Encode as E
 import Animation exposing (px)
 
 
-
 main : Program () Model Msg
 main =
     Browser.element
@@ -20,7 +19,6 @@ main =
         , update = update
         , subscriptions = subscriptions
         }
-
 
 
 --------------------------------------------------------------------------------
@@ -196,7 +194,6 @@ update msg m =
             ( m, Cmd.none)
 
 
-
 --------------------------------------------------------------------------------
 -- VIEW FUNCTIONS
 --------------------------------------------------------------------------------
@@ -216,9 +213,7 @@ view m =
     div []
         [ Html.node "link" [ Html.Attributes.rel "stylesheet", Html.Attributes.href "main.css" ] []
         , h1 [] [ text "Kanban board" ]
-        , div [style "display" "flex"
-        , style "justify-content" "space-around"
-        , style "text-align" "center"
+        , div [ class "container"
         ]
         [ div ( Animation.render m.style ++ [] ) [ viewBoard "Backlog" (board Backlog)]
         , button [onClick FadeIn, style "align-self" "flex-start"] [text "Backlog"]
@@ -236,10 +231,7 @@ view m =
 
 viewBoard : String -> Html Msg -> Html Msg
 viewBoard title issues =
-    div [style "border-radius" "2px"
-        , style "border-style" "solid"
-        , style "min-width" "15rem"
-        , style "min-height" "25rem"
+    div [class "board"
         ]
         [ h2 [style "margin" "1rem"] [ text title ]
         , p [onClick FadeOut, classList [("hidden", title == "To-do"), ("hidden", title == "Doing"), ("hidden", title == "Done")]] [text "X"]
@@ -308,7 +300,6 @@ statusDecoder =
 --------------------------------------------------------------------------------
 -- EXAMPLES
 --------------------------------------------------------------------------------
-
 
 
 json_example =
