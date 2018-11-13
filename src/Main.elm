@@ -40,6 +40,7 @@ type alias Model =
     , index : Int
     , input : String
     , style : Animation.State
+    , style2 : Animation.State
     }
 
 
@@ -55,6 +56,7 @@ init =
       , index = 0
       , input = ""
       , style = Animation.style[Animation.opacity 0.0]
+      , style2 = Animation.style[Animation.opacity 0.0]
       }
     , Cmd.none
     )
@@ -62,7 +64,8 @@ init =
 subscriptions : Model -> Sub Msg
 subscriptions m =
     Sub.batch
-    [Animation.subscription Animate [m.style]
+    [ Animation.subscription Animate2 [m.style2]
+    , Animation.subscription Animate [m.style]
     ]
 
 
@@ -122,8 +125,11 @@ type Msg
     | Add
     | Input String
     | Animate Animation.Msg
+    | Animate2 Animation.Msg
     | FadeIn
     | FadeOut
+    | FadeIn2
+    | FadeOut2
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -161,6 +167,21 @@ update msg m =
         Input st ->
             ( { m | input = st } , Cmd.none)
 
+
+        FadeIn2 ->
+            ( { m 
+                | style2 = 
+                    Animation.interrupt
+                        [ Animation.to
+                            [Animation.opacity 1
+                            ]
+                        ]
+                    m.style2
+                }
+                , Cmd.none
+            )
+
+
         FadeIn ->
             ( { m 
                 | style = 
@@ -173,6 +194,20 @@ update msg m =
                 }
                 , Cmd.none
             )
+
+        FadeOut2 ->
+            ( { m 
+                | style2 = 
+                    Animation.interrupt
+                        [ Animation.to
+                            [Animation.opacity 0
+                            ]
+                        ]
+                    m.style2
+                }
+                , Cmd.none
+            )
+
         FadeOut ->
             ( { m 
                 | style = 
@@ -188,6 +223,13 @@ update msg m =
         Animate animMsg ->
             ( { m
                 | style = Animation.update animMsg m.style
+              }
+            , Cmd.none
+            )
+
+        Animate2 animMsg ->
+            ( { m
+                | style2 = Animation.update animMsg m.style2
               }
             , Cmd.none
             )
@@ -220,12 +262,12 @@ view m =
         , style "justify-content" "space-around"
         , style "text-align" "center"
         ]
-        [ div ( Animation.render m.style ++ [] ) [ viewBoard "Backlog" (board Backlog)]
-        , button [onClick FadeIn, style "align-self" "flex-start"] [text "Backlog"]
+        [ div ( Animation.render m.style2 ++ [] ) [ viewBoard "Backlog" (board Backlog)]
+        , button [onClick FadeIn2, style "align-self" "flex-start", style "cursor" "pointer"] [text "Backlog"]
         , viewBoard "To-do" (board Todo)
         , viewBoard "Doing" (board Doing)
         , viewBoard "Done" (board Done)
-        , button [onClick FadeIn, style "align-self" "flex-start"] [text "Archived"]
+        , button [onClick FadeIn, style "align-self" "flex-start", style "cursor" "pointer"] [text "Archived"]
         , div ( Animation.render m.style ++ [] ) [ viewBoard "Archived" (board Archived)]
         ]
         , Html.form [ onSubmit Add, style "margin-top" "5rem" ]
@@ -236,14 +278,20 @@ view m =
 
 viewBoard : String -> Html Msg -> Html Msg
 viewBoard title issues =
-    div [style "border-radius" "2px"
+    div [ style "border-radius" "2px"
         , style "border-style" "solid"
         , style "min-width" "15rem"
         , style "min-height" "25rem"
         ]
-        [ h2 [style "margin" "1rem"] [ text title ]
-        , p [onClick FadeOut, classList [("hidden", title == "To-do"), ("hidden", title == "Doing"), ("hidden", title == "Done")]] [text "X"]
-        , issues
+        [ 
+        div [ style "display" "inline-flex"
+            , style "align-items" "center"
+            ]
+            [ h2 [style "margin" "1rem"] [ text title ]
+            , p [style "cursor" "pointer", style "border-style" "solid", style "border-width" "1px", style "width" "20px", onClick FadeOut, classList [("hidden", title == "To-do"), ("hidden", title == "Doing"), ("hidden", title == "Done"), ("hidden", title == "Backlog")]] [text "X"]
+            , p [style "cursor" "pointer", style "border-style" "solid", style "border-width" "1px", style "width" "20px", onClick FadeOut2, classList [("hidden", title == "To-do"), ("hidden", title == "Doing"), ("hidden", title == "Done"), ("hidden", title == "Archived")]] [text "X"]
+            ]
+            , issues
         ]
 
 
