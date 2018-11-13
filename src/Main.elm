@@ -11,7 +11,6 @@ import Json.Encode as E
 import Animation exposing (px)
 
 
-
 main : Program () Model Msg
 main =
     Browser.element
@@ -20,7 +19,6 @@ main =
         , update = update
         , subscriptions = subscriptions
         }
-
 
 
 --------------------------------------------------------------------------------
@@ -238,7 +236,6 @@ update msg m =
             ( m, Cmd.none)
 
 
-
 --------------------------------------------------------------------------------
 -- VIEW FUNCTIONS
 --------------------------------------------------------------------------------
@@ -256,18 +253,29 @@ view m =
                     List.filter (Tuple.first >> (==) s) issueViews
     in
     div []
-        [ Html.node "link" [ Html.Attributes.rel "stylesheet", Html.Attributes.href "main.css" ] []
+        [ Html.node "link"
+            [ Html.Attributes.rel "stylesheet"
+            , Html.Attributes.href "main.css"
+            ] []
         , h1 [] [ text "Kanban board" ]
         , div [style "display" "flex"
         , style "justify-content" "space-around"
         , style "text-align" "center"
         ]
         [ div ( Animation.render m.style2 ++ [] ) [ viewBoard "Backlog" (board Backlog)]
-        , button [onClick FadeIn2, style "align-self" "flex-start", style "cursor" "pointer"] [text "Backlog"]
+        , button 
+            [ onClick FadeIn2
+            , class "big-button"
+            ] 
+            [ text "Backlog" ]
         , viewBoard "To-do" (board Todo)
         , viewBoard "Doing" (board Doing)
         , viewBoard "Done" (board Done)
-        , button [onClick FadeIn, style "align-self" "flex-start", style "cursor" "pointer"] [text "Archived"]
+        , button 
+            [ onClick FadeIn
+            , class "big-button"
+            ] 
+            [ text "Archived"]
         , div ( Animation.render m.style ++ [] ) [ viewBoard "Archived" (board Archived)]
         ]
         , Html.form [ onSubmit Add, style "margin-top" "5rem" ]
@@ -278,18 +286,30 @@ view m =
 
 viewBoard : String -> Html Msg -> Html Msg
 viewBoard title issues =
-    div [ style "border-radius" "2px"
-        , style "border-style" "solid"
-        , style "min-width" "15rem"
-        , style "min-height" "25rem"
-        ]
+    div [ class "board"]
         [ 
-        div [ style "display" "inline-flex"
-            , style "align-items" "center"
-            ]
+        div [ class "board-header"]
             [ h2 [style "margin" "1rem"] [ text title ]
-            , p [style "cursor" "pointer", style "border-style" "solid", style "border-width" "1px", style "width" "20px", onClick FadeOut, classList [("hidden", title == "To-do"), ("hidden", title == "Doing"), ("hidden", title == "Done"), ("hidden", title == "Backlog")]] [text "X"]
-            , p [style "cursor" "pointer", style "border-style" "solid", style "border-width" "1px", style "width" "20px", onClick FadeOut2, classList [("hidden", title == "To-do"), ("hidden", title == "Doing"), ("hidden", title == "Done"), ("hidden", title == "Archived")]] [text "X"]
+            , p 
+                [ class "x-button"
+                , onClick FadeOut
+                , classList 
+                    [ ("hidden", title == "To-do")
+                    , ("hidden", title == "Doing")
+                    , ("hidden", title == "Done")
+                    , ("hidden", title == "Backlog")
+                    ] 
+                ] [text "X"]
+            , p 
+                [ class "x-button"
+                , onClick FadeOut2
+                , classList 
+                    [ ("hidden", title == "To-do")
+                    , ("hidden", title == "Doing")
+                    , ("hidden", title == "Done")
+                    , ("hidden", title == "Archived")
+                    ]
+                ] [text "X"]
             ]
             , issues
         ]
@@ -356,7 +376,6 @@ statusDecoder =
 --------------------------------------------------------------------------------
 -- EXAMPLES
 --------------------------------------------------------------------------------
-
 
 
 json_example =

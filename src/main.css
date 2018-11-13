@@ -1,4 +1,39 @@
-.hidden{
+h2 {
+    margin: 1rem;
+}
+
+.hidden {
     visibility: hidden;
     display: none;
+}
+
+.board {
+    border-radius: 2px;
+    border-style: solid;
+    min-width: 15rem;
+    min-height: 25rem;
+}
+
+.board-header{
+    display: inline-flex;
+    align-items: center;
+}
+
+.container {
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+}
+
+
+.big-button{
+    align-self: flex-start;
+    cursor: pointer;
+}
+
+.x-button{
+    cursor: pointer;
+    border-style: solid;
+    border-width: 1px;
+    width: 20px;
 }
