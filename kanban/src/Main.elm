@@ -1,14 +1,14 @@
 module Pages.Kanban exposing (Model, init, main)
 
+import Animation exposing (px)
 import Browser
 import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Utils exposing (..)
 import Json.Decode as D
 import Json.Encode as E
-import Animation exposing (px)
+import Utils exposing (..)
 
 
 main : Program () Model Msg
@@ -21,9 +21,11 @@ main =
         }
 
 
+
 --------------------------------------------------------------------------------
 -- MODEL
 --------------------------------------------------------------------------------
+
 
 type Status
     = Backlog
@@ -53,18 +55,19 @@ init =
     ( { issues = decoded
       , index = 0
       , input = ""
-      , style = Animation.style[Animation.opacity 0.0]
-      , style2 = Animation.style[Animation.opacity 0.0]
+      , style = Animation.style [ Animation.opacity 0.0 ]
+      , style2 = Animation.style [ Animation.opacity 0.0 ]
       }
     , Cmd.none
     )
 
+
 subscriptions : Model -> Sub Msg
 subscriptions m =
     Sub.batch
-    [ Animation.subscription Animate2 [m.style2]
-    , Animation.subscription Animate [m.style]
-    ]
+        [ Animation.subscription Animate2 [ m.style2 ]
+        , Animation.subscription Animate [ m.style ]
+        ]
 
 
 {-| Create simple flag element
@@ -88,7 +91,7 @@ incr status =
 
         Done ->
             Archived
-        
+
         Archived ->
             Archived
 
@@ -110,6 +113,8 @@ decr status =
 
         Archived ->
             Done
+
+
 
 --------------------------------------------------------------------------------
 -- MESSAGES
@@ -134,14 +139,14 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg m =
     case msg of
         Incr i ->
-           ( { m
+            ( { m
                 | issues =
                     mapAt i
                         (\x -> { x | status = incr x.status })
                         m.issues
-            }
+              }
             , Cmd.none
-           )
+            )
 
         Decr i ->
             ( { m
@@ -149,75 +154,74 @@ update msg m =
                     mapAt i
                         (\x -> { x | status = decr x.status })
                         m.issues
-            }
+              }
             , Cmd.none
-           )
+            )
 
         Add ->
             ( { m
                 | index = m.index + 1
                 , issues = issue m.input :: m.issues
                 , input = ""
-            }
+              }
             , Cmd.none
-           )
-
-        Input st ->
-            ( { m | input = st } , Cmd.none)
-
-
-        FadeIn2 ->
-            ( { m 
-                | style2 = 
-                    Animation.interrupt
-                        [ Animation.to
-                            [Animation.opacity 1
-                            ]
-                        ]
-                    m.style2
-                }
-                , Cmd.none
             )
 
+        Input st ->
+            ( { m | input = st }, Cmd.none )
 
-        FadeIn ->
-            ( { m 
-                | style = 
+        FadeIn2 ->
+            ( { m
+                | style2 =
                     Animation.interrupt
                         [ Animation.to
-                            [Animation.opacity 1
+                            [ Animation.opacity 1
                             ]
                         ]
-                    m.style
-                }
-                , Cmd.none
+                        m.style2
+              }
+            , Cmd.none
+            )
+
+        FadeIn ->
+            ( { m
+                | style =
+                    Animation.interrupt
+                        [ Animation.to
+                            [ Animation.opacity 1
+                            ]
+                        ]
+                        m.style
+              }
+            , Cmd.none
             )
 
         FadeOut2 ->
-            ( { m 
-                | style2 = 
+            ( { m
+                | style2 =
                     Animation.interrupt
                         [ Animation.to
-                            [Animation.opacity 0
+                            [ Animation.opacity 0
                             ]
                         ]
-                    m.style2
-                }
-                , Cmd.none
+                        m.style2
+              }
+            , Cmd.none
             )
 
         FadeOut ->
-            ( { m 
-                | style = 
+            ( { m
+                | style =
                     Animation.interrupt
                         [ Animation.to
-                            [Animation.opacity 0
+                            [ Animation.opacity 0
                             ]
                         ]
-                    m.style
-                }
-                , Cmd.none
+                        m.style
+              }
+            , Cmd.none
             )
+
         Animate animMsg ->
             ( { m
                 | style = Animation.update animMsg m.style
@@ -233,12 +237,14 @@ update msg m =
             )
 
         _ ->
-            ( m, Cmd.none)
+            ( m, Cmd.none )
+
 
 
 --------------------------------------------------------------------------------
 -- VIEW FUNCTIONS
 --------------------------------------------------------------------------------
+
 
 view : Model -> Html Msg
 view m =
@@ -256,68 +262,72 @@ view m =
         [ Html.node "link"
             [ Html.Attributes.rel "stylesheet"
             , Html.Attributes.href "main.css"
-            ] []
+            ]
+            []
         , h1 [] [ text "Kanban board" ]
-        , div [style "display" "flex"
-        , style "justify-content" "space-around"
-        , style "text-align" "center"
-        ]
-        [ div ( Animation.render m.style2 ++ [] ) [ viewBoard "Backlog" (board Backlog)]
-        , button 
-            [ onClick FadeIn2
-            , class "big-button"
-            ] 
-            [ text "Backlog" ]
-        , viewBoard "To-do" (board Todo)
-        , viewBoard "Doing" (board Doing)
-        , viewBoard "Done" (board Done)
-        , button 
-            [ onClick FadeIn
-            , class "big-button"
-            ] 
-            [ text "Archived"]
-        , div ( Animation.render m.style ++ [] ) [ viewBoard "Archived" (board Archived)]
-        ]
+        , div
+            [ style "display" "flex"
+            , style "justify-content" "space-around"
+            , style "text-align" "center"
+            ]
+            [ div (Animation.render m.style2 ++ []) [ viewBoard "Backlog" (board Backlog) ]
+            , button
+                [ onClick FadeIn2
+                , class "big-button"
+                ]
+                [ text "Backlog" ]
+            , viewBoard "To-do" (board Todo)
+            , viewBoard "Doing" (board Doing)
+            , viewBoard "Done" (board Done)
+            , button
+                [ onClick FadeIn
+                , class "big-button"
+                ]
+                [ text "Archived" ]
+            , div (Animation.render m.style ++ []) [ viewBoard "Archived" (board Archived) ]
+            ]
         , Html.form [ onSubmit Add, style "margin-top" "5rem" ]
             [ input [ placeholder "New issue", value m.input, onInput Input ] []
             , input [ type_ "submit" ] []
             ]
         ]
 
+
 viewBoard : String -> Html Msg -> Html Msg
 viewBoard title issues =
-    div [ class "board"]
-        [ 
-        div [ class "board-header"]
-            [ h2 [style "margin" "1rem"] [ text title ]
-            , p 
+    div [ class "board" ]
+        [ div [ class "board-header" ]
+            [ h2 [ style "margin" "1rem" ] [ text title ]
+            , p
                 [ class "x-button"
                 , onClick FadeOut
-                , classList 
-                    [ ("hidden", title == "To-do")
-                    , ("hidden", title == "Doing")
-                    , ("hidden", title == "Done")
-                    , ("hidden", title == "Backlog")
-                    ] 
-                ] [text "X"]
-            , p 
+                , classList
+                    [ ( "hidden", title == "To-do" )
+                    , ( "hidden", title == "Doing" )
+                    , ( "hidden", title == "Done" )
+                    , ( "hidden", title == "Backlog" )
+                    ]
+                ]
+                [ text "X" ]
+            , p
                 [ class "x-button"
                 , onClick FadeOut2
-                , classList 
-                    [ ("hidden", title == "To-do")
-                    , ("hidden", title == "Doing")
-                    , ("hidden", title == "Done")
-                    , ("hidden", title == "Archived")
+                , classList
+                    [ ( "hidden", title == "To-do" )
+                    , ( "hidden", title == "Doing" )
+                    , ( "hidden", title == "Done" )
+                    , ( "hidden", title == "Archived" )
                     ]
-                ] [text "X"]
+                ]
+                [ text "X" ]
             ]
-            , issues
+        , issues
         ]
 
 
 viewIssue : Int -> Issue -> Html Msg
 viewIssue i obj =
-    div [style "margin" "0.5rem"]
+    div [ style "margin" "0.5rem" ]
         [ arrow "<= " Backlog (Decr i) obj.status
         , text obj.description
         , arrow " =>" Archived (Incr i) obj.status
@@ -336,12 +346,15 @@ arrow arr except msg status =
     in
     span cmds [ text arr ]
 
+
 decoded =
     D.decodeString issuesListDecoder json_example |> Result.withDefault []
 
 
 issuesListDecoder : D.Decoder (List Issue)
-issuesListDecoder = D.list issueDecoder
+issuesListDecoder =
+    D.list issueDecoder
+
 
 issueDecoder : D.Decoder Issue
 issueDecoder =
@@ -349,28 +362,32 @@ issueDecoder =
         (D.field "description" D.string)
         (D.field "status" statusDecoder)
 
+
 statusDecoder : D.Decoder Status
 statusDecoder =
-    D.string |> D.andThen (\x ->
-        case x of
-            "backlog" ->
-                D.succeed Backlog
+    D.string
+        |> D.andThen
+            (\x ->
+                case x of
+                    "backlog" ->
+                        D.succeed Backlog
 
-            "doing" ->
-                D.succeed Doing
+                    "doing" ->
+                        D.succeed Doing
 
-            "done" ->
-                D.succeed Done
+                    "done" ->
+                        D.succeed Done
 
-            "archived" ->
-                D.succeed Archived
+                    "archived" ->
+                        D.succeed Archived
 
-            "todo" ->
-                D.succeed Todo
+                    "todo" ->
+                        D.succeed Todo
 
-            y ->
-                D.fail <| "Status desconhecido '" ++ y ++ "'"
-    )
+                    y ->
+                        D.fail <| "Status desconhecido '" ++ y ++ "'"
+            )
+
 
 
 --------------------------------------------------------------------------------
