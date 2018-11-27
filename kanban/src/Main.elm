@@ -328,9 +328,17 @@ viewBoard title issues =
 viewIssue : Int -> Issue -> Html Msg
 viewIssue i obj =
     div [ style "margin" "0.5rem" ]
-        [ arrow "<= " Backlog (Decr i) obj.status
+        [ span 
+            [ classList
+                [ ( "hidden", obj.status == Backlog ) ]
+            ] 
+            [ arrow "<= " Backlog (Decr i) obj.status ]
         , text obj.description
-        , arrow " =>" Archived (Incr i) obj.status
+        , span 
+            [ classList 
+                [ ( "hidden", obj.status == Archived ) ] 
+            ] 
+            [ arrow " =>" Archived (Incr i) obj.status ]
         ]
 
 
