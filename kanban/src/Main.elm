@@ -39,8 +39,8 @@ type alias Model =
     { issues : List Issue
     , index : Int
     , input : String
-    , style : Animation.State
-    , style2 : Animation.State
+    , archivedStyle : Animation.State
+    , backlogStyle : Animation.State
     }
 
 
@@ -55,8 +55,8 @@ init =
     ( { issues = decoded
       , index = 0
       , input = ""
-      , style = Animation.style [ Animation.opacity 0.0 ]
-      , style2 = Animation.style [ Animation.opacity 0.0 ]
+      , archivedStyle = Animation.style [ Animation.opacity 0.0 ]
+      , backlogStyle = Animation.style [ Animation.opacity 0.0 ]
       }
     , Cmd.none
     )
@@ -65,8 +65,8 @@ init =
 subscriptions : Model -> Sub Msg
 subscriptions m =
     Sub.batch
-        [ Animation.subscription Animate2 [ m.style2 ]
-        , Animation.subscription Animate [ m.style ]
+        [ Animation.subscription ArchivedAnimate [ m.backlogStyle ]
+        , Animation.subscription BacklogAnimate [ m.archivedStyle ]
         ]
 
 
@@ -127,12 +127,12 @@ type Msg
     | Decr Int
     | Add
     | Input String
-    | Animate Animation.Msg
-    | Animate2 Animation.Msg
-    | FadeIn
-    | FadeOut
-    | FadeIn2
-    | FadeOut2
+    | BacklogAnimate Animation.Msg
+    | ArchivedAnimate Animation.Msg
+    | FadeInArchived
+    | FadeOutArchived
+    | FadeInBacklog
+    | FadeOutBacklog
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -170,68 +170,68 @@ update msg m =
         Input st ->
             ( { m | input = st }, Cmd.none )
 
-        FadeIn2 ->
+        FadeInBacklog ->
             ( { m
-                | style2 =
+                | backlogStyle =
                     Animation.interrupt
                         [ Animation.to
                             [ Animation.opacity 1
                             ]
                         ]
-                        m.style2
+                        m.backlogStyle
               }
             , Cmd.none
             )
 
-        FadeIn ->
+        FadeInArchived ->
             ( { m
-                | style =
+                | archivedStyle =
                     Animation.interrupt
                         [ Animation.to
                             [ Animation.opacity 1
                             ]
                         ]
-                        m.style
+                        m.archivedStyle
               }
             , Cmd.none
             )
 
-        FadeOut2 ->
+        FadeOutBacklog ->
             ( { m
-                | style2 =
+                | backlogStyle =
                     Animation.interrupt
                         [ Animation.to
                             [ Animation.opacity 0
                             ]
                         ]
-                        m.style2
+                        m.backlogStyle
               }
             , Cmd.none
             )
 
-        FadeOut ->
+        FadeOutArchived ->
             ( { m
-                | style =
+                | archivedStyle =
                     Animation.interrupt
                         [ Animation.to
                             [ Animation.opacity 0
                             ]
                         ]
-                        m.style
+                        m.archivedStyle
               }
             , Cmd.none
             )
 
-        Animate animMsg ->
+        BacklogAnimate animMsg ->
             ( { m
-                | style = Animation.update animMsg m.style
+                | archivedStyle = Animation.update animMsg m.archivedStyle
               }
             , Cmd.none
             )
 
-        Animate2 animMsg ->
+        ArchivedAnimate animMsg ->
             ( { m
-                | style2 = Animation.update animMsg m.style2
+                | backlogStyle = Animation.update animMsg m.backlogStyle
               }
             , Cmd.none
             )
@@ -270,9 +270,9 @@ view m =
             , style "justify-content" "space-around"
             , style "text-align" "center"
             ]
-            [ div (Animation.render m.style2 ++ []) [ viewBoard "Backlog" (board Backlog) ]
+            [ div (Animation.render m.backlogStyle ++ []) [ viewBoard "Backlog" (board Backlog) ]
             , button
-                [ onClick FadeIn2
+                [ onClick FadeInBacklog
                 , class "big-button"
                 ]
                 [ text "Backlog" ]
@@ -280,11 +280,11 @@ view m =
             , viewBoard "Doing" (board Doing)
             , viewBoard "Done" (board Done)
             , button
-                [ onClick FadeIn
+                [ onClick FadeInArchived
                 , class "big-button"
                 ]
                 [ text "Archived" ]
-            , div (Animation.render m.style ++ []) [ viewBoard "Archived" (board Archived) ]
+            , div (Animation.render m.archivedStyle ++ []) [ viewBoard "Archived" (board Archived) ]
             ]
         , Html.form [ onSubmit Add, style "margin-top" "5rem" ]
             [ input [ placeholder "New issue", value m.input, onInput Input ] []
@@ -300,7 +300,7 @@ viewBoard title issues =
             [ h2 [ style "margin" "1rem" ] [ text title ]
             , p
                 [ class "x-button"
-                , onClick FadeOut
+                , onClick FadeOutArchived
                 , classList
                     [ ( "hidden", title == "To-do" )
                     , ( "hidden", title == "Doing" )
@@ -311,7 +311,7 @@ viewBoard title issues =
                 [ text "X" ]
             , p
                 [ class "x-button"
-                , onClick FadeOut2
+                , onClick FadeOutBacklog
                 , classList
                     [ ( "hidden", title == "To-do" )
                     , ( "hidden", title == "Doing" )
