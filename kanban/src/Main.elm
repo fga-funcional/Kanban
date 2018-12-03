@@ -115,6 +115,44 @@ decr status =
             Done
 
 
+arch : Status -> Status
+arch status =
+    case status of
+        Backlog ->
+            Archived
+
+        Todo ->
+            Archived
+
+        Doing ->
+            Archived
+
+        Done ->
+            Archived
+
+        Archived ->
+            Archived
+
+
+unarch : Status -> Status
+unarch status =
+    case status of
+        Backlog ->
+            Todo
+
+        Todo ->
+            Todo
+
+        Doing ->
+            Todo
+
+        Done ->
+            Todo
+
+        Archived ->
+            Todo
+
+
 
 --------------------------------------------------------------------------------
 -- MESSAGES
@@ -125,6 +163,8 @@ type Msg
     = NoOp
     | Incr Int
     | Decr Int
+    | Arch Int
+    | Unarch Int
     | Add
     | Input String
     | BacklogAnimate Animation.Msg
@@ -138,6 +178,26 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg m =
     case msg of
+        Unarch i ->
+            ( { m
+                | issues =
+                    mapAt i
+                        (\x -> { x | status = unarch x.status })
+                        m.issues
+              }
+            , Cmd.none
+            )
+
+        Arch i ->
+            ( { m
+                | issues =
+                    mapAt i
+                        (\x -> { x | status = arch x.status })
+                        m.issues
+              }
+            , Cmd.none
+            )
+
         Incr i ->
             ( { m
                 | issues =
@@ -270,7 +330,8 @@ view m =
             , style "justify-content" "space-around"
             , style "text-align" "center"
             ]
-            [ div (Animation.render m.backlogStyle ++ []) [ viewBoard "Backlog" (board Backlog) ]
+            [ div (Animation.render m.backlogStyle ++ [])
+                [ viewBoard "Backlog" (board Backlog) ]
             , button
                 [ onClick FadeInBacklog
                 , class "big-button"
@@ -284,7 +345,8 @@ view m =
                 , class "big-button"
                 ]
                 [ text "Archived" ]
-            , div (Animation.render m.archivedStyle ++ []) [ viewBoard "Archived" (board Archived) ]
+            , div (Animation.render m.archivedStyle ++ [])
+                [ viewBoard "Archived" (board Archived) ]
             ]
         , Html.form [ onSubmit Add, style "margin-top" "5rem" ]
             [ input [ placeholder "New issue", value m.input, onInput Input ] []
@@ -327,18 +389,43 @@ viewBoard title issues =
 
 viewIssue : Int -> Issue -> Html Msg
 viewIssue i obj =
-    div [ style "margin" "0.5rem" ]
-        [ span 
-            [ classList
-                [ ( "hidden", obj.status == Backlog ) ]
-            ] 
-            [ arrow "<= " Backlog (Decr i) obj.status ]
-        , text obj.description
-        , span 
-            [ classList 
-                [ ( "hidden", obj.status == Archived ) ] 
-            ] 
-            [ arrow " =>" Archived (Incr i) obj.status ]
+    div []
+        [ div
+            [ style "margin" "0.5rem"
+            , style "display" "inline-flex"
+            ]
+            [ span
+                [ class "x-button"
+                , classList
+                    [ ( "hidden", obj.status == Backlog )
+                    , ( "hidden", obj.status == Archived )
+                    ]
+                ]
+                [ arrow " <= " Backlog (Decr i) obj.status ]
+            , span
+                [ class "x-button"
+                , classList
+                    [ ( "hidden", obj.status == Backlog )
+                    , ( "hidden", obj.status == Todo )
+                    , ( "hidden", obj.status == Doing )
+                    , ( "hidden", obj.status == Done )
+                    ]
+                ]
+                [ arrow " << " Todo (Unarch i) obj.status ]
+            , p [ class "description" ]
+                [ text obj.description ]
+            , span
+                [ class "x-button"
+                , classList
+                    [ ( "hidden", obj.status == Archived ) ]
+                ]
+                [ arrow " => " Archived (Incr i) obj.status ]
+            ]
+        , span
+            [ class "x-button"
+            , classList [ ( "hidden", obj.status == Archived ) ]
+            ]
+            [ arrow "v" Archived (Arch i) obj.status ]
         ]
 
 
