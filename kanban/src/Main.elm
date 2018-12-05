@@ -1,11 +1,13 @@
 module Pages.Kanban exposing (Model, init, main)
 
 import Animation exposing (px)
+import Array
 import Browser
 import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Http exposing (..)
 import Json.Decode as D
 import Json.Encode as E
 import Utils exposing (..)
@@ -173,6 +175,8 @@ type Msg
     | FadeOutArchived
     | FadeInBacklog
     | FadeOutBacklog
+    | GotIssues (Result Http.Error (List Issue))
+    | GetIssues
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -295,6 +299,17 @@ update msg m =
               }
             , Cmd.none
             )
+
+        GetIssues ->
+            ( m, Http.send GotIssues getIssues )
+
+        GotIssues result ->
+            case result of
+                Err httpError ->
+                    ( m, Cmd.none )
+
+                Ok i ->
+                    ( { m | issues = i }, Cmd.none )
 
         _ ->
             ( m, Cmd.none )
@@ -482,6 +497,11 @@ statusDecoder =
                     y ->
                         D.fail <| "Status desconhecido '" ++ y ++ "'"
             )
+
+
+getIssues : Http.Request (List Issue)
+getIssues =
+    Http.get "http://localhost:3000/issues" issuesListDecoder
 
 
 
