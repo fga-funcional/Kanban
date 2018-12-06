@@ -1,8 +1,27 @@
-{-# LANGUAGE OverloadedStrings #-}
+
+{-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
+
 module Main where
 
-import Lib
-import Web.Scotty as S
+import Data.Aeson
+import GHC.Generics
+import Web.Scotty
+import Network.Wai.Middleware.Cors
+import qualified Data.ByteString.Lazy as B
+
+data Status = Backlog | Todo | Doing | Done | Archived deriving (Show, Eq, Generic)
+instance FromJSON Status
+instance ToJSON Status
+
+data Issue = Issue {
+    description :: String,
+    status :: Status
+} deriving (Show, Eq, Generic)
+instance FromJSON Issue
+instance ToJSON Issue
+
+jsonFile :: FilePath
+jsonFile = "kanban.json"
 
 type Description = String
 type Status = String
@@ -41,3 +60,14 @@ main = do
         get "/issues" $ do
           issues <- liftIO $ readMVar issues'
           json issues
+
+getJSON :: IO B.ByteString
+getJSON = B.readFile jsonFile
+
+main :: IO ()
+main = do
+    scotty 3000 $ do
+        middleware simpleCors
+        get "/" $ do
+            html "Hello, Kanban!"
+
