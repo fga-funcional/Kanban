@@ -1,4 +1,3 @@
-
 {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
 
 module Main where
@@ -13,57 +12,19 @@ data Status = Backlog | Todo | Doing | Done | Archived deriving (Show, Eq, Gener
 instance FromJSON Status
 instance ToJSON Status
 
-newtype IssueList = IssueList [Issue]
+newtype IssueList = IssueList [Issue] deriving (Generic)
 instance FromJSON IssueList
 instance ToJSON IssueList
 
 data Issue = Issue {
     description :: String,
-    status :: Status
+    status :: String
 } deriving (Show, Eq, Generic)
 instance FromJSON Issue
 instance ToJSON Issue
 
 jsonFile :: FilePath
 jsonFile = "kanban.json"
-
-type Description = String
-type Status = String
-
-allIssues :: M.Map Status [Description]
-allIssues = M.fromList
-  [ ( "done", 
-      [ "Dividr em 5 boards"
-      , "Criar arquivdar e desarquivar"
-      ]
-    )
-  , ( "doing",
-      [ "Importar de JSON"
-      , "Integrar com o Haskell"  
-      ]
-    )
-  , ( "todo",
-      [ "Exportar para JSON"
-      , "Deixar mais bonito"
-      ]
-    )
-  , ( "backlog",
-      [ "Criar label para as issues"
-      , "Criar comentáro na issue"
-      ]
-    ) 
-  ]
-
-main :: IO ()
-main = do
-    issues' <- newMVar  allIssues
-
-    scotty 3000 $ do
-        middleware simpleCors
-
-        get "/issues" $ do
-          issues <- liftIO $ readMVar issues'
-          json issues
 
 getJSON :: IO B.ByteString
 getJSON = B.readFile jsonFile
@@ -73,5 +34,7 @@ main = do
     scotty 3000 $ do
         middleware simpleCors
         get "/" $ do
-            html "Hello, Kanban!"
+            json (decode getIssues :: Maybe IssueList)
 
+getIssues =
+  "[{ \"description\": \"Dividir em 5 boards\", \"status\": \"done\" }, { \"status\": \"doing\", \"description\": \"Importar de JSON\" }, { \"status\": \"todo\", \"description\": \"Exportar para JSON\" }, { \"status\": \"backlog\", \"description\": \"esconder os boards Backlog e Archived\" }, { \"status\": \"todo\", \"description\": \"Dormir mais de 3h por noite\" }, { \"status\": \"doing\", \"description\": \"Finalizar semestre (ou ser finalizado)\" }, { \"status\": \"doing\", \"description\": \"Tentar aprender Haskell de novo\" }, { \"status\": \"done\", \"description\": \"Tentar aprender Haskell\" }, { \"status\": \"archived\", \"description\": \"Colocar umas issues em arquivo JSON\" }, { \"status\": \"archived\", \"description\": \"Mudar de curso\" }, { \"status\": \"archived\", \"description\": \"Fazer dieta\" }, { \"status\": \"backlog\", \"description\": \"Comprar ventilador\" } ]"
