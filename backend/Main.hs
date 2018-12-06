@@ -3,7 +3,7 @@
 
 module Main where
 
-import Data.Aeson
+import Data.Aeson (ToJSON, FromJSON, decode, encode)
 import GHC.Generics
 import Web.Scotty
 import Network.Wai.Middleware.Cors
@@ -12,6 +12,10 @@ import qualified Data.ByteString.Lazy as B
 data Status = Backlog | Todo | Doing | Done | Archived deriving (Show, Eq, Generic)
 instance FromJSON Status
 instance ToJSON Status
+
+newtype IssueList = IssueList [Issue]
+instance FromJSON IssueList
+instance ToJSON IssueList
 
 data Issue = Issue {
     description :: String,
