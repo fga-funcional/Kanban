@@ -1,0 +1,39 @@
+[
+    {
+        "description": "Dividir em 5 boards",
+        "status": "done"
+    }, {
+        "status": "doing",
+        "description": "Importar de JSON"
+    }, {
+        "status": "todo",
+        "description": "Exportar para JSON"
+    }, {
+        "status": "backlog",
+        "description": "esconder por padrão os boards Backlog e Archived"
+    }, {
+        "status": "todo",
+        "description": "Dormir mais de 3h por noite"
+    }, {
+        "status": "doing",
+        "description": "Finalizar semestre (ou ser finalizado)"
+    }, {
+        "status": "doing",
+        "description": "Tentar aprender Haskell de novo"
+    }, {
+        "status": "done",
+        "description": "Tentar aprender Haskell"
+    }, {
+        "status": "archived",
+        "description": "Colocar umas issues em arquivo JSON"
+    }, {
+        "status": "archived",
+        "description": "Mudar de curso"
+    }, {
+        "status": "archived",
+        "description": "Começar dieta"
+    }, {
+        "status": "backlog",
+        "description": "Começar academia"
+    }
+]
