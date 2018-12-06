@@ -33,7 +33,7 @@ main :: IO ()
 main = do
     scotty 3000 $ do
         middleware simpleCors
-        get "/" $ do
+        get "/issues" $ do
             json (decode getIssues :: Maybe IssueList)
 
 getIssues =
