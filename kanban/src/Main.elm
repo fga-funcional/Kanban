@@ -60,7 +60,7 @@ init =
       , archivedStyle = Animation.style [ Animation.opacity 0.0 ]
       , backlogStyle = Animation.style [ Animation.opacity 0.0 ]
       }
-    , Cmd.none
+    , Http.send GotIssues getIssues
     )
 
 
@@ -432,7 +432,9 @@ viewIssue i obj =
             , span
                 [ class "x-button"
                 , classList
-                    [ ( "hidden", obj.status == Archived ) ]
+                    [ ( "hidden", obj.status == Archived )
+                    , ( "hidden", obj.status == Done )
+                    ]
                 ]
                 [ arrow " => " Archived (Incr i) obj.status ]
             ]
