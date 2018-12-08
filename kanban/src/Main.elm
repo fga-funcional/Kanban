@@ -177,6 +177,7 @@ type Msg
     | FadeOutBacklog
     | GotIssues (Result Http.Error (List Issue))
     | GetIssues
+    | SaveIssues
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -300,6 +301,9 @@ update msg m =
             , Cmd.none
             )
 
+        SaveIssues ->
+            ( m, saveIssues m )
+
         GetIssues ->
             ( m, Http.send GotIssues getIssues )
 
@@ -367,6 +371,7 @@ view m =
             [ input [ placeholder "New issue", value m.input, onInput Input ] []
             , input [ type_ "submit" ] []
             ]
+        , button [ onClick SaveIssues, class "salvar" ] [ text "Salvar" ]
         ]
 
 
@@ -404,7 +409,7 @@ viewBoard title issues =
 
 viewIssue : Int -> Issue -> Html Msg
 viewIssue i obj =
-    div []
+    div [ class "issue-div" ]
         [ div
             [ style "margin" "0.5rem"
             , style "display" "inline-flex"
@@ -459,8 +464,9 @@ arrow arr except msg status =
     span cmds [ text arr ]
 
 
+decoded : List Issue
 decoded =
-    D.decodeString issuesListDecoder json_example |> Result.withDefault []
+    D.decodeString issuesListDecoder " " |> Result.withDefault []
 
 
 issuesListDecoder : D.Decoder (List Issue)
@@ -506,27 +512,66 @@ getIssues =
     Http.get "http://localhost:3000/issues" issuesListDecoder
 
 
+saveIssues : Model -> Cmd Msg
+saveIssues m =
+    Http.send GotIssues (postIssues m)
 
---------------------------------------------------------------------------------
--- EXAMPLES
---------------------------------------------------------------------------------
+
+postIssues : Model -> Http.Request (List Issue)
+postIssues m =
+    Http.post "http://localhost:3000/api" (Http.jsonBody (issuesListEncoder m)) issuesListDecoder
 
 
-json_example =
-    """
-[
-    {
-        "description": "Dividir em 5 boards",
-        "status": "done"
-    }, {
-        "status": "doing",
-        "description": "Importar de JSON"
-    }, {
-        "status": "todo",
-        "description": "Exportar para JSON"
-    }, {
-        "status": "backlog",
-        "description": "esconder por padrão os boards Backlog e Archived"
-    }
-]
-"""
+
+-- request : Model -> Http.Request (List Issue)
+-- request m =
+--     let
+--         headers =
+--             [ Http.header "Access-Control-Allow-Origin" ""
+--             , Http.header "Content-Type" "application/json"
+--             ]
+--     in
+--     Http.request
+--         { body = Http.jsonBody <| issuesListEncoder m
+--         , expect = Http.expectJson issuesListDecoder
+--         , headers = headers
+--         , method = "POST"
+--         , timeout = Nothing
+--         , url = "http://localhost:3000/api"
+--         , withCredentials = False
+--         }
+-- issuesToJson : Model -> String
+-- issuesToJson m =
+--     E.encode 2 (issuesListEncoder m)
+
+
+issuesListEncoder : Model -> E.Value
+issuesListEncoder m =
+    E.list encodeIssue m.issues
+
+
+encodeIssue : Issue -> E.Value
+encodeIssue i =
+    E.object
+        [ ( "status", encodeStatus i.status )
+        , ( "description", E.string i.description )
+        ]
+
+
+encodeStatus : Status -> E.Value
+encodeStatus status =
+    case status of
+        Backlog ->
+            E.string "Backlog"
+
+        Todo ->
+            E.string "Todo"
+
+        Doing ->
+            E.string "Doing"
+
+        Done ->
+            E.string "Done"
+
+        Archived ->
+            E.string "Archived"
