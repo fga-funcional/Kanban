@@ -23,11 +23,10 @@ data Issue = Issue {
 instance FromJSON Issue
 instance ToJSON Issue
 
-jsonFile :: FilePath
-jsonFile = "kanban.json"
-
 getJSON :: IO B.ByteString
-getJSON = B.readFile jsonFile
+getJSON = B.readFile jsonFile where
+  jsonFile :: FilePath
+  jsonFile = "kanban.json"
 
 main :: IO ()
 main = do
