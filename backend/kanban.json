@@ -3,8 +3,8 @@
         "description": "Dividir em 5 boards",
         "status": "done"
     }, {
-        "status": "doing",
-        "description": "Importar de JSON"
+        "status": "done",
+        "description": "Ler JSON de arquivo"
     }, {
         "status": "todo",
         "description": "Exportar para JSON"

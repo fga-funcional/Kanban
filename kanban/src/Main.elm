@@ -507,6 +507,7 @@ statusDecoder =
             )
 
 
+
 getIssues : Http.Request (List Issue)
 getIssues =
     Http.get "http://localhost:3000/issues" issuesListDecoder
