@@ -12,3 +12,4 @@ executable          kanban
                   , scotty
                   , transformers
                   , wai-cors
+                  , strict

@@ -507,7 +507,6 @@ statusDecoder =
             )
 
 
-
 getIssues : Http.Request (List Issue)
 getIssues =
     Http.get "http://localhost:3000/issues" issuesListDecoder
@@ -515,40 +514,17 @@ getIssues =
 
 saveIssues : Model -> Cmd Msg
 saveIssues m =
-    Http.send GotIssues (postIssues m)
+    Http.send GotIssues (postIssues m.issues)
 
 
-postIssues : Model -> Http.Request (List Issue)
+postIssues : List Issue -> Http.Request (List Issue)
 postIssues m =
     Http.post "http://localhost:3000/api" (Http.jsonBody (issuesListEncoder m)) issuesListDecoder
 
 
-
--- request : Model -> Http.Request (List Issue)
--- request m =
---     let
---         headers =
---             [ Http.header "Access-Control-Allow-Origin" ""
---             , Http.header "Content-Type" "application/json"
---             ]
---     in
---     Http.request
---         { body = Http.jsonBody <| issuesListEncoder m
---         , expect = Http.expectJson issuesListDecoder
---         , headers = headers
---         , method = "POST"
---         , timeout = Nothing
---         , url = "http://localhost:3000/api"
---         , withCredentials = False
---         }
--- issuesToJson : Model -> String
--- issuesToJson m =
---     E.encode 2 (issuesListEncoder m)
-
-
-issuesListEncoder : Model -> E.Value
+issuesListEncoder : List Issue -> E.Value
 issuesListEncoder m =
-    E.list encodeIssue m.issues
+    E.list encodeIssue m
 
 
 encodeIssue : Issue -> E.Value
