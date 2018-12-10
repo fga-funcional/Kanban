@@ -9,7 +9,6 @@ import Control.Monad.IO.Class (liftIO)
 import Network.Wai.Middleware.Cors
 import qualified Data.ByteString.Lazy.Char8 as B
 import qualified System.IO.Strict as Strict
-import Debug.Trace as T
 
 data Status = Backlog | Todo | Doing | Done | Archived deriving (Show, Eq, Generic)
 instance FromJSON Status
@@ -34,17 +33,13 @@ getFile = do
   return filePath
 
 initFile :: FilePath -> String -> IO ()
-initFile path "" =
-  writeFile path " "
 initFile path _ = mempty
 
-saveToJSON :: String -> IO String
-saveToJSON contents = do
+saveToJsonFile :: String -> IO String
+saveToJsonFile contents = do
   let filePath = "kanban.json"
   writeFile filePath contents
   return filePath
-
-debug = flip T.trace
 
 main :: IO ()
 main = do
@@ -56,5 +51,5 @@ main = do
 
     post "/api" $ do
       body <- S.body 
-      filePath <- liftIO $ saveToJSON (B.unpack body) 
+      filePath <- liftIO $ saveToJsonFile (B.unpack body) 
       file filePath 
